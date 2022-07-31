@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import pyrebase
+from datetime import datetime
+
 
 CONFIG = {
   "apiKey" : "AIzaSyBfR-dCykhSpaRhiOCjpyXaVcQxygSkFJ4",
@@ -9,11 +11,12 @@ CONFIG = {
   "messagingSenderId" : "485834454591",
   "appId" : "1:485834454591:web:8536a1e052b58c85a5ea8a",
   "measurementId" : "G-TR8P602N4W",
-  "databaseURL" : ""
+  "databaseURL" : "https://auth-lab-65e0e-default-rtdb.europe-west1.firebasedatabase.app"
   }
 
 firebase = pyrebase.initialize_app(CONFIG)
 auth = firebase.auth()
+db = firebase.database()
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -39,9 +42,13 @@ def signin():
 def signup():
     if request.method == 'POST':
         email = request.form['email']
+        fullname = request.form['fullname']
         password = request.form['password']
+        session['username'] = request.form['username']
         try:
             session['user'] = auth.create_user_with_email_and_password(email, password)
+            user = {'name': fullname, 'email': email}
+            db.child("Users").child(session['user']['localId']).set(user)
             return redirect(url_for('add_tweet'))
         except Exception:
             flash('Email already in use')
@@ -51,10 +58,23 @@ def signup():
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
 def add_tweet():
+    if request.method == 'POST':
+        tweet = { 'tweetBody': request.form['body'], 'Title': request.form['title'], 'Author': session['username'], 'currentTime': datetime.now().strftime("%H:%M:%S") }
+        try:
+            db.child("Users").child(session['user']['localId']).child("Tweets").push(tweet) # push to the database
+            return redirect(url_for('tweets'))
+        except Exception:
+            flash('Error adding tweet')
+            return redirect(url_for('add_tweet'))
     return render_template("add_tweet.html")
 
 
-@app.route('logout', methods=['GET', 'POST'])
+@app.route('/all_tweets', methods=['GET', 'POST'])
+def tweets():
+    return render_template("all_tweets.html", tweets=db.child("Users").child(session['user']['localId']).child("Tweets").get().val().values())
+
+
+@app.route('/logout', methods=['GET', 'POST'])
 def logout(logout):
     if logout:
         session['User'] = None

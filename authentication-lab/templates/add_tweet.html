@@ -5,7 +5,14 @@
     <title>Title</title>
 </head>
 <body>
-    Great Job!
     <a href="{{url_for('logout', logout=True)}}">logout</a>
+
+    <div>
+        <form method="post" action="/add_tweet">
+            <input type="text" name="title" placeholder="Tweet Title" minlength="1" required>
+            <input type="text" name="body" placeholder="Tweet Body" minlength="1" required>
+            <input type="submit" value="add tweet">
+        </form>
+    </div>
 </body>
 </html>

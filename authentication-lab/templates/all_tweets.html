@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter feed</title>
+</head>
+<body>
+    <div>
+    {% for tweet in thing %}
+    <ul>
+        <li>
+            {{tweet["Title"]}}<br>
+            {{tweet["Author"]}}<br>
+            {{tweet["tweetBody"]}}<br>
+            {{tweet["currentTime"]}}<br>
+        </li>
+    </ul>
+    {% endfor %}
+    </div>
+</body>
+</html>
